@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioSafeguard | Intelligent Redaction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/timeline.min.js"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <div id="tooltip" class="custom-tooltip"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                        stroke="currentColor" stroke-width="2" />
+                    <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <circle cx="12" cy="16" r="1" fill="currentColor" />
+                </svg>
+                <span>AudioSafeguard</span>
+            </div>
+            <div class="header-status">
+                <span class="status-dot"></span> System Ready
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <section class="hero-section" id="hero">
+                <h1>Secure Your Audio</h1>
+                <p>Intelligent, automated redaction for sensitive information.</p>
+            </section>
+
+            <div class="glass-panel main-panel" id="main-panel">
+
+                <!-- Top Audio Player Section -->
+                <div id="audio-player-section" class="audio-player-section hidden">
+                    <div class="result-header">
+                        <div class="success-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M22 11.08V12A10 10 0 1 1 5.93 8" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M22 4L12 14.01L9 11.01" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h2>Redaction Complete</h2>
+                        <div class="actions">
+                            <a id="download-btn" href="#" class="btn-sm primary">Download Audio</a>
+                            <button id="reset-btn" class="btn-sm secondary">New File</button>
+                        </div>
+                    </div>
+
+                    <div class="waveform-wrapper">
+                        <div id="waveform" class="waveform-container"></div>
+                        <div id="waveform-timeline"></div>
+                        <div class="waveform-controls">
+                            <button id="play-pause-btn" class="control-btn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                            </button>
+                            <span id="time-display">00:00 / 00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Body (Split View) -->
+                <div class="panel-body">
+                    <!-- config sidebar -->
+                    <aside class="config-sidebar" id="config-sidebar">
+                        <h3>Configuration</h3>
+
+                        <div class="control-group">
+                            <label>Redaction Mode</label>
+                            <div class="toggle-group">
+                                <input type="radio" id="mode-beep" name="mode" value="beep" checked>
+                                <label for="mode-beep" class="toggle-btn">Beep</label>
+
+                                <input type="radio" id="mode-silence" name="mode" value="silence">
+                                <label for="mode-silence" class="toggle-btn">Silence</label>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Detection Method</label>
+                            <div class="toggle-group detection-mode-group">
+                                <input type="radio" id="detection-gemini" name="detection_mode" value="gemini" checked>
+                                <label for="detection-gemini" class="toggle-btn">Gemini AI</label>
+
+                                <input type="radio" id="detection-ai" name="detection_mode" value="ai">
+                                <label for="detection-ai" class="toggle-btn">BERT</label>
+
+                                <input type="radio" id="detection-regex" name="detection_mode" value="regex">
+                                <label for="detection-regex" class="toggle-btn">Regex</label>
+                            </div>
+                            <span class="helper-text">Gemini AI provides the most accurate detection.</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="denoise-toggle">
+                                <span class="checkmark"></span>
+                                Noise Reduction
+                            </label>
+                            <span class="helper-text">Pre-process audio to improve transcription accuracy on noisy
+                                files.</span>
+                        </div>
+
+                        <div class="control-group denoise-slider-group" id="denoise-slider-group"
+                            style="display: none;">
+                            <label for="denoise-intensity">Noise Reduction Intensity</label>
+                            <div class="slider-container">
+                                <input type="range" id="denoise-intensity" min="0" max="1" step="0.1" value="0.8">
+                                <span id="denoise-value" class="slider-value">0.8</span>
+                            </div>
+                            <span class="helper-text">Higher values = more aggressive noise removal.</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="custom-words">Custom Redaction List</label>
+                            <textarea id="custom-words" placeholder="Apple, Tesla, Project X..."></textarea>
+                            <span class="helper-text">Comma separated words or phrases.</span>
+                        </div>
+                    </aside>
+
+                    <!-- upload area -->
+                    <div class="upload-area-container">
+                        <div id="drop-zone" class="drop-zone">
+                            <div class="drop-zone-content">
+                                <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 8L12 3L7 8" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M12 3V15" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <h3>Drop Audio File Here</h3>
+                                <p>or <label for="file-input" class="browse-link">browse files</label></p>
+                                <input type="file" id="file-input" accept="audio/*" hidden>
+                            </div>
+                        </div>
+
+                        <div id="processing-view" class="processing-view hidden">
+                            <div class="loader-ring"></div>
+                            <p class="status-text">Processing Audio...</p>
+                            <p class="sub-status">Transcribing and analyzing patterns</p>
+                        </div>
+
+                        <div id="result-view" class="result-view hidden">
+                            <!-- Report Grid -->
+                            <div class="report-grid">
+                                <div class="stats-card">
+                                    <h4>Analysis Stats</h4>
+                                    <div class="stats-row">
+                                        <div class="stat-item">
+                                            <span class="stat-value" id="stat-count">0</span>
+                                            <span class="stat-label">Redactions</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-value" id="stat-duration">0s</span>
+                                            <span class="stat-label">Duration</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-value" id="stat-time">0s</span>
+                                            <span class="stat-label">Process Time</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="summary-card">
+                                    <h4>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                        </svg>
+                                        AI Summary
+                                    </h4>
+                                    <div id="ai-summary" class="ai-summary-content">
+                                        Processing summary...
+                                    </div>
+                                </div>
+
+                                <div class="log-card">
+                                    <h4>Redaction Details</h4>
+                                    <div id="redaction-log" class="redaction-log-list"></div>
+                                </div>
+                            </div>
+
+                            <details class="json-details">
+                                <summary>View Debug JSON</summary>
+                                <pre id="json-report"></pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <div class="bg-gradient-1"></div>
+        <div class="bg-gradient-2"></div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+
+</html>
