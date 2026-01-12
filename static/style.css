@@ -18,7 +18,7 @@
     padding: 0;
 }
 
-Audio Redaction Service body {
+body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-main);
